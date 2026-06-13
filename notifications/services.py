@@ -9,13 +9,12 @@ def send_telegram_message(telegram_id: str, text: str) -> bool:
         print(f"Ошибка: token={token}, telegram_id={telegram_id}")
         return False
 
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-
     # ЗАГЛУШКА для сдачи работы – реальная отправка отключена из‑за блокировки сети
     payload = {"chat_id": telegram_id, "text": text}
     print(f"[Telegram] (симуляция) Отправлено сообщение: {payload}")
     return True
 
+    #url = f"https://api.telegram.org/bot{token}/sendMessage"
     # try:
     # response = requests.post(url, json=payload, timeout=5)
     # print(f"Telegram ответ: {response.status_code} - {response.text}")

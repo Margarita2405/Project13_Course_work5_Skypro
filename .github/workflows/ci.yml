@@ -99,38 +99,38 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to Server
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP << 'EOF'
             cd ~/myapp
             git pull origin develop
             cat > .env <<EOL
-SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-DEBUG=False
-DATABASE_NAME=habit_tracker
-DATABASE_USER=postgres
-DATABASE_PASSWORD=qwer7890
-DATABASE_HOST=db
-DATABASE_PORT=5432
-POSTGRES_DB=habit_tracker
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=qwer7890
-ADMIN_EMAIL=admin.habit@example.ru
-ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
-REDIS_URL=redis://redis:6379/0
-TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
-ALLOWED_HOSTS=${{ secrets.SERVER_IP }}
-EOL
-            docker-compose pull
-            
-            # 1. Запускаем только БД и Redis
-            docker-compose up -d db redis
-            
-            # 2. Собираем статику и проводим миграции через временный контейнер web
-            docker-compose run --rm web python manage.py migrate
-            docker-compose run --rm web python manage.py collectstatic --noinput
-            
-            # 3. Запускаем все остальные сервисы (web, nginx, worker, beat)
-            docker-compose up -d
+          SECRET_KEY=$DJANGO_SECRET_KEY
+          DEBUG=False
+          DATABASE_NAME=habit_tracker
+          DATABASE_USER=postgres
+          DATABASE_PASSWORD=qwer7890
+          DATABASE_HOST=db
+          DATABASE_PORT=5432
+          POSTGRES_DB=habit_tracker
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=qwer7890
+          ADMIN_EMAIL=admin.habit@example.ru
+          ADMIN_PASSWORD=$ADMIN_PASSWORD
+          REDIS_URL=redis://redis:6379/0
+          TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN
+          TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID
+          ALLOWED_HOSTS=$SERVER_IP
+          EOL
+          docker-compose pull
+          docker-compose up -d db redis
+          docker-compose run --rm web python manage.py migrate
+          docker-compose run --rm web python manage.py collectstatic --noinput
+          docker-compose up -d
           EOF
-
